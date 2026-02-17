@@ -11,6 +11,7 @@ connectToDB();
 
 
 app.use("/api", router);
+app.use("/api/auth", require("./routes/auth.routes"));
 
 app.listen(process.env.PORT, () => {
   console.log("App is listening on port ", process.env.PORT);
