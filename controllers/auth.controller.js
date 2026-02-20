@@ -2,6 +2,7 @@ const User = require("../models/user.model");
 const RefreshToken = require("../models/refreshToken.model");
 const generateTokens = require("../utils/generateTokens");
 const jwt = require("jsonwebtoken");
+const BlacklistToken = require("../models/blacklistToken.model");
 
 // REGISTER
 exports.register = async (req, res) => {
@@ -73,8 +74,18 @@ exports.refresh = async (req, res) => {
 // LOGOUT
 exports.logout = async (req, res) => {
   const { refreshToken } = req.body;
+  const accessToken = req.headers.authorization?.split(" ")[1];
 
   await RefreshToken.deleteOne({ token: refreshToken });
+
+  if (accessToken) {
+    const decoded = jwt.decode(accessToken);
+
+    await BlacklistToken.create({
+      token: accessToken,
+      expiresAt: new Date(decoded.exp * 1000)
+    });
+  }
 
   res.json({ message: "Logged out successfully" });
 };
